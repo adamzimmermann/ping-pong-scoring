@@ -59,9 +59,9 @@ public:
         // Deuce advantage: show a single advantage LED on the leading player's gap side
         if (game.isDeuce()) {
             if (game.score[0] > game.score[1]) {
-                leds[SCORE_LEDS_PER_SIDE + 1] = DEUCE_ADV_COLOR;  // LED 22, gap side of P1 serve
+                leds[SCORE_LEDS_PER_SIDE + 2] = DEUCE_ADV_COLOR;  // LED 43, spaced past P1 serve
             } else if (game.score[1] > game.score[0]) {
-                leds[TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 2] = DEUCE_ADV_COLOR;  // LED 121, gap side of P2 serve
+                leds[TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 3] = DEUCE_ADV_COLOR;  // LED 100, spaced past P2 serve
             }
         }
     }
@@ -133,7 +133,7 @@ public:
     }
 
     // Victory animation: rainbow chase + winner's side flashing
-    // Returns true when animation is complete (after ~5 seconds)
+    // Returns true when animation is complete (after ~8 seconds)
     bool animateVictory(const PingPongGame& game) {
         unsigned long elapsed = millis() - game.animStartTime;
 

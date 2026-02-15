@@ -190,12 +190,6 @@ void handleGameOver() {
     if (done) {
         // After victory animation, show final score with loser dimmed
         display.renderGameOver(game);
-
-        // Flash winner side periodically
-        static unsigned long lastFlash = 0;
-        if (millis() - lastFlash > 1000) {
-            lastFlash = millis();
-        }
     }
 
     // Any button press after game over starts a new game

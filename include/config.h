@@ -33,8 +33,8 @@
 // [P1 score: 0..40] [serve:41] [gap:42..101] [serve:102] [P2 score: 103..143]
 //  ^ Every other LED lit (0,2,4..40)        ^ P2 mirrored (143,141,139..103)
 //
-// P1 lights up LEDs 0,1,2... as they score
-// P2 lights up LEDs (TOTAL_LEDS-1), (TOTAL_LEDS-2)... as they score
+// P1 lights up LEDs 0,2,4... as they score (every other LED)
+// P2 lights up LEDs 143,141,139... as they score (every other LED)
 
 // Serve indicator LED: the outermost LED on the serving player's side pulses
 // P1 serve indicator = LED index (SCORE_LEDS_PER_SIDE) (just past score area)

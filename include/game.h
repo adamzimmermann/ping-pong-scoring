@@ -23,7 +23,7 @@ struct PingPongGame {
     void reset() {
         score[0] = 0;
         score[1] = 0;
-        // Alternate who serves first each game, or default to P1
+        // Default to P1; overridden after game over
         firstServer = 0;
         servingPlayer = firstServer;
         state = GameState::PLAYING;
@@ -38,11 +38,6 @@ struct PingPongGame {
     // Are we in deuce territory?
     bool isDeuce() const {
         return score[0] >= DEUCE_THRESHOLD && score[1] >= DEUCE_THRESHOLD;
-    }
-
-    // Current serve switch interval
-    uint8_t currentServeInterval() const {
-        return isDeuce() ? DEUCE_SERVE_SWITCH : SERVE_SWITCH_EVERY;
     }
 
     // Is one player at game point (match point) without deuce?
