@@ -60,16 +60,25 @@
 // =============================================================================
 // Colors for points 1-5, 6-10, 11-15, 16-20, 21 (game point)
 const CRGB SCORE_COLORS[] = {
-    CRGB::Green,          // Points  1-5
-    CRGB::Blue,           // Points  6-10
-    CRGB::Purple,         // Points 11-15
-    CRGB::OrangeRed,      // Points 16-20
-    CRGB::Red             // Point  21 (game point!)
+    CRGB::Blue,            // Points  1-5
+    CRGB::Green,           // Points  6-10
+    CRGB::Yellow,          // Points 11-15
+    CRGB::Orange,          // Points 16-20
+    CRGB::Red              // Point  21 (game point!)
 };
 #define NUM_SCORE_COLORS (sizeof(SCORE_COLORS) / sizeof(SCORE_COLORS[0]))
 
 // Serve indicator color
 #define SERVE_COLOR         CRGB::White
+
+// Serve change animation color
+#define SERVE_ANIM_COLOR    CRGB::White
+
+// Deuce advantage pulse color
+#define DEUCE_ADV_COLOR     CRGB::Red
+
+// Victory winner flash color
+#define VICTORY_FLASH_COLOR CRGB::White
 
 // Background (unlit score LEDs)
 #define BG_COLOR            CRGB::Black

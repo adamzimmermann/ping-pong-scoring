@@ -63,7 +63,7 @@ public:
                     uint8_t pulse = beatsin8(30, 80, 255);
                     int advIdx = (p == 0) ? SCORE_LEDS_PER_SIDE - 1
                                           : TOTAL_LEDS - SCORE_LEDS_PER_SIDE;
-                    leds[advIdx] = CRGB::Red;
+                    leds[advIdx] = DEUCE_ADV_COLOR;
                     leds[advIdx].nscale8(pulse);
                 }
             }
@@ -134,7 +134,7 @@ public:
                 int idx = gapStart + sweepPos + (t * trailDir);
                 if (idx >= gapStart && idx <= gapEnd) {
                     uint8_t brightness = 255 - (t * 80);
-                    leds[idx] = CRGB::Yellow;
+                    leds[idx] = SERVE_ANIM_COLOR;
                     leds[idx].nscale8(brightness);
                 }
             }
@@ -168,7 +168,7 @@ public:
         if (w >= 0 && (frame / 5) % 2 == 0) {
             for (int i = 0; i < game.score[w] && i < SCORE_LEDS_PER_SIDE; i++) {
                 int idx = (w == 0) ? i : (TOTAL_LEDS - 1 - i);
-                leds[idx] = CRGB::White;
+                leds[idx] = VICTORY_FLASH_COLOR;
             }
         }
 
