@@ -52,8 +52,9 @@
 // =============================================================================
 // BUTTON DEBOUNCE
 // =============================================================================
-#define DEBOUNCE_MS         250   // Minimum ms between button presses
-#define LONG_PRESS_MS       3000  // Hold both buttons this long to reset
+#define DEBOUNCE_MS         100   // Minimum ms between button presses
+#define DOUBLE_TAP_MS       400   // Window for double-tap detection
+#define LONG_PRESS_MS       3000  // Hold either button this long to reset
 
 // =============================================================================
 // SCORE COLORS - each group of 5 points gets a distinct color

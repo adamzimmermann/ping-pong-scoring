@@ -6,7 +6,8 @@
 // Controls:
 //   - Player 1 button: adds a point for Player 1 (left side)
 //   - Player 2 button: adds a point for Player 2 (right side)
-//   - Hold BOTH buttons for 3 seconds: reset the game
+//   - Double-tap a button: undo last point for that player
+//   - Hold EITHER button for 3 seconds: reset the game
 //
 // LED Layout (single strip across table center):
 //   [P1 score: grows right ->] [gap w/ serve indicator] [<- grows left: P2 score]
@@ -33,34 +34,66 @@ PingPongGame game;
 ScoreDisplay display;
 DualPrint logger;
 
-// Button state tracking
+// Button state tracking with double-tap and long-press support
 struct ButtonState {
     uint8_t pin;
     bool lastState;
     bool currentState;
     unsigned long lastPressTime;
-    bool pressed;  // Edge-detected: true for one loop when freshly pressed
+    unsigned long pendingPressTime;
+    bool pressed;        // Single press confirmed (after double-tap window)
+    bool doubleTapped;   // Double tap confirmed
+    bool pendingPress;   // Waiting to see if double-tap follows
+    bool holdFired;      // Long-press already triggered this hold
 
     void begin(uint8_t _pin) {
         pin = _pin;
-        pinMode(pin, INPUT_PULLUP);  // Buttons connect pin to GND
+        pinMode(pin, INPUT_PULLUP);
         lastState = HIGH;
         currentState = HIGH;
         lastPressTime = 0;
+        pendingPressTime = 0;
         pressed = false;
+        doubleTapped = false;
+        pendingPress = false;
+        holdFired = false;
     }
 
     void update() {
         pressed = false;
+        doubleTapped = false;
         currentState = digitalRead(pin);
 
         // Detect falling edge (HIGH -> LOW) with debounce
         if (currentState == LOW && lastState == HIGH) {
-            if (millis() - lastPressTime > DEBOUNCE_MS) {
-                pressed = true;
-                lastPressTime = millis();
+            unsigned long now = millis();
+            if (now - lastPressTime > DEBOUNCE_MS) {
+                lastPressTime = now;
+                holdFired = false;
+
+                if (pendingPress && (now - pendingPressTime < DOUBLE_TAP_MS)) {
+                    // Second tap within window — double tap
+                    doubleTapped = true;
+                    pendingPress = false;
+                } else {
+                    // First tap — wait for possible second
+                    pendingPress = true;
+                    pendingPressTime = now;
+                }
             }
         }
+
+        // Cancel pending press if button is still held (becoming a long-press)
+        if (pendingPress && isHeld() && (millis() - pendingPressTime >= DOUBLE_TAP_MS)) {
+            pendingPress = false;
+        }
+
+        // Pending press timed out and button released → single press
+        if (pendingPress && !isHeld() && (millis() - pendingPressTime >= DOUBLE_TAP_MS)) {
+            pressed = true;
+            pendingPress = false;
+        }
+
         lastState = currentState;
     }
 
@@ -68,16 +101,17 @@ struct ButtonState {
         return (currentState == LOW);
     }
 
-    unsigned long heldDuration() const {
-        if (currentState == LOW) {
-            return millis() - lastPressTime;
+    // Long-press detection: returns true once per hold when held >= LONG_PRESS_MS
+    bool longPressed() {
+        if (isHeld() && !holdFired && (millis() - lastPressTime >= LONG_PRESS_MS)) {
+            holdFired = true;
+            return true;
         }
-        return 0;
+        return false;
     }
 };
 
 ButtonState btn1, btn2;
-unsigned long bothHeldSince = 0;
 bool resetTriggered = false;
 
 // =============================================================================
@@ -109,6 +143,18 @@ void printGameState() {
 void handlePlaying() {
     // Process button presses (only when not doing reset)
     if (!resetTriggered) {
+        // Double-tap: undo last point for that player
+        if (btn1.doubleTapped) {
+            logger.print("Undo P1 point! ");
+            game.removePoint(0);
+            printGameState();
+        } else if (btn2.doubleTapped) {
+            logger.print("Undo P2 point! ");
+            game.removePoint(1);
+            printGameState();
+        }
+
+        // Single tap: score a point
         if (btn1.pressed) {
             logger.print("Player 1 scores! ");
             game.addPoint(0);
@@ -260,22 +306,18 @@ void loop() {
     btn1.update();
     btn2.update();
 
-    // Check for simultaneous long-press reset
-    if (btn1.isHeld() && btn2.isHeld()) {
-        if (bothHeldSince == 0) {
-            bothHeldSince = millis();
-        } else if (millis() - bothHeldSince >= LONG_PRESS_MS && !resetTriggered) {
-            resetTriggered = true;
-            logger.println(">>> GAME RESET <<<");
-            game.reset();
-            display.clearAll();
-            display.show();
-            delay(200);
-            display.animateStartup();
-            printGameState();
-        }
-    } else {
-        bothHeldSince = 0;
+    // Check for long-press reset (either button)
+    if (btn1.longPressed() || btn2.longPressed()) {
+        resetTriggered = true;
+        logger.println(">>> GAME RESET <<<");
+        game.reset();
+        display.clearAll();
+        display.show();
+        delay(200);
+        display.animateStartup();
+        printGameState();
+    }
+    if (!btn1.isHeld() && !btn2.isHeld()) {
         resetTriggered = false;
     }
 

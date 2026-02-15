@@ -91,6 +91,17 @@ struct PingPongGame {
         return serveChanged;
     }
 
+    // Remove a point from a player (for undo via double-tap)
+    void removePoint(uint8_t player) {
+        if (player > 1 || score[player] == 0) return;
+        score[player]--;
+        servingPlayer = calculateServingPlayer();
+        // If game was over, go back to playing
+        if (state == GameState::GAME_OVER) {
+            state = GameState::PLAYING;
+        }
+    }
+
     // Check if someone has won
     bool isGameWon() const {
         for (int p = 0; p < 2; p++) {
