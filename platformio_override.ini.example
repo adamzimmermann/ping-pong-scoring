@@ -1,0 +1,7 @@
+; Local overrides — not tracked in git.
+; Copy this file to platformio_override.ini and fill in your values.
+
+[env:esp32-ota]
+upload_port = 192.168.1.xxx           ; Your board's IP address
+; upload_flags =
+;     --auth=your_ota_password        ; Uncomment if you set OTA_PASSWORD in secrets.h

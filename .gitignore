@@ -1,0 +1,5 @@
+.pio
+.vscode
+.idea
+include/secrets.h
+platformio_override.ini
