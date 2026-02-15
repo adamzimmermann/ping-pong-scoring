@@ -79,6 +79,7 @@ struct PingPongGame {
         // Check for win
         if (isGameWon()) {
             state = GameState::GAME_OVER;
+            animStartTime = millis();
             return false;
         }
 

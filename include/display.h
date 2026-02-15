@@ -56,15 +56,15 @@ public:
             leds[TOTAL_LEDS - 1 - i] = colorForPoint(i + 1);
         }
 
-        // Deuce advantage: pulse the outermost score LED for the leading player
+        // Deuce advantage: dim the trailing player's LEDs
         if (game.isDeuce()) {
             for (int p = 0; p < 2; p++) {
-                if (game.score[p] > game.score[1 - p]) {
-                    uint8_t pulse = beatsin8(30, 80, 255);
-                    int advIdx = (p == 0) ? SCORE_LEDS_PER_SIDE - 1
-                                          : TOTAL_LEDS - SCORE_LEDS_PER_SIDE;
-                    leds[advIdx] = DEUCE_ADV_COLOR;
-                    leds[advIdx].nscale8(pulse);
+                if (game.score[p] < game.score[1 - p]) {
+                    // This player is trailing — dim their LEDs
+                    for (int i = 0; i < SCORE_LEDS_PER_SIDE; i++) {
+                        int idx = (p == 0) ? i : (TOTAL_LEDS - 1 - i);
+                        leds[idx].nscale8(DEUCE_TRAILING_DIM);
+                    }
                 }
             }
         }
@@ -201,6 +201,23 @@ public:
         clearAll();
         renderScore(game);
         renderServeIndicator(game);
+        FastLED.show();
+    }
+
+    // Post-victory: show final score with loser's side dimmed
+    void renderGameOver(const PingPongGame& game) {
+        clearAll();
+        renderScore(game);
+
+        int8_t w = game.winner();
+        if (w >= 0) {
+            int loser = 1 - w;
+            for (int i = 0; i < SCORE_LEDS_PER_SIDE; i++) {
+                int idx = (loser == 0) ? i : (TOTAL_LEDS - 1 - i);
+                leds[idx].nscale8(LOSER_DIM);
+            }
+        }
+
         FastLED.show();
     }
 

@@ -142,8 +142,8 @@ void handleGameOver() {
     bool done = display.animateVictory(game);
 
     if (done) {
-        // After victory animation, show final score and wait for reset
-        display.renderPlaying(game);
+        // After victory animation, show final score with loser dimmed
+        display.renderGameOver(game);
 
         // Flash winner side periodically
         static unsigned long lastFlash = 0;
