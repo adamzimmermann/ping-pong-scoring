@@ -55,6 +55,19 @@ public:
         for (int i = 0; i < game.score[1] && i < SCORE_LEDS_PER_SIDE; i++) {
             leds[TOTAL_LEDS - 1 - i] = colorForPoint(i + 1);
         }
+
+        // Deuce advantage: pulse the outermost score LED for the leading player
+        if (game.isDeuce()) {
+            for (int p = 0; p < 2; p++) {
+                if (game.score[p] > game.score[1 - p]) {
+                    uint8_t pulse = beatsin8(30, 80, 255);
+                    int advIdx = (p == 0) ? SCORE_LEDS_PER_SIDE - 1
+                                          : TOTAL_LEDS - SCORE_LEDS_PER_SIDE;
+                    leds[advIdx] = CRGB::Red;
+                    leds[advIdx].nscale8(pulse);
+                }
+            }
+        }
     }
 
     // =========================================================================

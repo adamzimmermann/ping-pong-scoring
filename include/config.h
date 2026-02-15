@@ -21,7 +21,7 @@
 
 #define LED_TYPE            WS2812B   // WS2815 uses same protocol
 #define COLOR_ORDER         GRB
-#define TOTAL_LEDS          88        // Total LEDs on the strip (adjust to your setup)
+#define TOTAL_LEDS          144       // 144 LEDs/m, 1m strip
 #define BRIGHTNESS          80        // 0-255, start conservative
 
 // How many LEDs per player side for scoring (21 points = 21 LEDs)
