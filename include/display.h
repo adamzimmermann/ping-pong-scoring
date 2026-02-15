@@ -118,19 +118,20 @@ public:
         int gapSize = gapEnd - gapStart + 1;
 
         if (gapSize > 0) {
-            // Sweep a bright dot back and forth across the gap
+            // Sweep toward the new server's indicator LED
             int sweepPos;
-            if (frame < totalFrames / 2) {
-                // Sweep one direction
-                sweepPos = map(frame, 0, totalFrames / 2, 0, gapSize - 1);
+            if (game.servingPlayer == 1) {
+                // New server is P2 (right): sweep left-to-right
+                sweepPos = map(frame, 0, totalFrames, 0, gapSize - 1);
             } else {
-                // Sweep back
-                sweepPos = map(frame, totalFrames / 2, totalFrames, gapSize - 1, 0);
+                // New server is P1 (left): sweep right-to-left
+                sweepPos = map(frame, 0, totalFrames, gapSize - 1, 0);
             }
 
-            // Trail of 3 LEDs
+            // Trail of 3 LEDs (trail behind the sweep direction)
+            int trailDir = (game.servingPlayer == 1) ? -1 : 1;
             for (int t = 0; t < 3; t++) {
-                int idx = gapStart + sweepPos - t;
+                int idx = gapStart + sweepPos + (t * trailDir);
                 if (idx >= gapStart && idx <= gapEnd) {
                     uint8_t brightness = 255 - (t * 80);
                     leds[idx] = CRGB::Yellow;
