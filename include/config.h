@@ -84,4 +84,9 @@ const CRGB SCORE_COLORS[] = {
 // Credentials are loaded from secrets.h (not tracked in git).
 // Copy secrets.h.example to secrets.h and fill in your values.
 
+// =============================================================================
+// TELNET SERIAL MONITOR
+// =============================================================================
+#define TELNET_PORT         23
+
 #include "secrets.h"

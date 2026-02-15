@@ -23,6 +23,7 @@
 #include "config.h"
 #include "game.h"
 #include "display.h"
+#include "netlog.h"
 
 // =============================================================================
 // GLOBALS
@@ -30,6 +31,7 @@
 
 PingPongGame game;
 ScoreDisplay display;
+DualPrint logger;
 
 // Button state tracking
 struct ButtonState {
@@ -83,21 +85,21 @@ bool resetTriggered = false;
 // =============================================================================
 
 void printGameState() {
-    Serial.print("Score: P1=");
-    Serial.print(game.score[0]);
-    Serial.print(" P2=");
-    Serial.print(game.score[1]);
-    Serial.print(" | Serve: P");
-    Serial.print(game.servingPlayer + 1);
+    logger.print("Score: P1=");
+    logger.print(game.score[0]);
+    logger.print(" P2=");
+    logger.print(game.score[1]);
+    logger.print(" | Serve: P");
+    logger.print(game.servingPlayer + 1);
     if (game.isDeuce()) {
-        Serial.print(" [DEUCE]");
+        logger.print(" [DEUCE]");
     }
     if (game.isGameWon()) {
-        Serial.print(" >>> WINNER: P");
-        Serial.print(game.winner() + 1);
-        Serial.print(" <<<");
+        logger.print(" >>> WINNER: P");
+        logger.print(game.winner() + 1);
+        logger.print(" <<<");
     }
-    Serial.println();
+    logger.println();
 }
 
 // =============================================================================
@@ -108,12 +110,12 @@ void handlePlaying() {
     // Process button presses (only when not doing reset)
     if (!resetTriggered) {
         if (btn1.pressed) {
-            Serial.print("Player 1 scores! ");
+            logger.print("Player 1 scores! ");
             game.addPoint(0);
             printGameState();
         }
         if (btn2.pressed) {
-            Serial.print("Player 2 scores! ");
+            logger.print("Player 2 scores! ");
             game.addPoint(1);
             printGameState();
         }
@@ -131,8 +133,8 @@ void handleServeChange() {
     bool done = display.animateServeChange(game);
     if (done) {
         game.state = GameState::PLAYING;
-        Serial.print("Serve now: Player ");
-        Serial.println(game.servingPlayer + 1);
+        logger.print("Serve now: Player ");
+        logger.println(game.servingPlayer + 1);
     }
 }
 
@@ -154,7 +156,7 @@ void handleGameOver() {
     if (btn1.pressed || btn2.pressed) {
         unsigned long elapsed = millis() - game.animStartTime;
         if (elapsed > 3000) {  // Wait at least 3 seconds before allowing reset
-            Serial.println(">>> NEW GAME <<<");
+            logger.println(">>> NEW GAME <<<");
             uint8_t lastFirstServer = game.firstServer;
             game.reset();
             game.firstServer = 1 - lastFirstServer;  // Alternate first serve
@@ -173,27 +175,27 @@ void handleGameOver() {
 
 void setup() {
     Serial.begin(115200);
-    Serial.println();
-    Serial.println("=== Ping Pong Scorer ===");
-    Serial.println("Initializing...");
+    logger.println();
+    logger.println("=== Ping Pong Scorer ===");
+    logger.println("Initializing...");
 
     // Initialize WiFi for OTA updates
     WiFi.mode(WIFI_STA);
     WiFi.setHostname(OTA_HOSTNAME);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    Serial.print("Connecting to WiFi");
+    logger.print("Connecting to WiFi");
 
     // Wait up to 10 seconds for WiFi — don't block forever
     unsigned long wifiStart = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - wifiStart < 10000) {
         delay(250);
-        Serial.print(".");
+        logger.print(".");
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.println();
-        Serial.print("WiFi connected! IP: ");
-        Serial.println(WiFi.localIP());
+        logger.println();
+        logger.print("WiFi connected! IP: ");
+        logger.println(WiFi.localIP());
 
         // Setup OTA
         ArduinoOTA.setHostname(OTA_HOSTNAME);
@@ -205,27 +207,28 @@ void setup() {
             // Blank LEDs during OTA to reduce power draw / interference
             FastLED.clear();
             FastLED.show();
-            Serial.println("OTA update starting...");
+            logger.println("OTA update starting...");
         });
         ArduinoOTA.onEnd([]() {
-            Serial.println("\nOTA update complete! Rebooting...");
+            logger.println("\nOTA update complete! Rebooting...");
         });
         ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-            Serial.printf("OTA Progress: %u%%\r", (progress / (total / 100)));
+            logger.printf("OTA Progress: %u%%\r", (progress / (total / 100)));
         });
         ArduinoOTA.onError([](ota_error_t error) {
-            Serial.printf("OTA Error[%u]: ", error);
-            if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-            else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-            else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-            else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-            else if (error == OTA_END_ERROR) Serial.println("End Failed");
+            logger.printf("OTA Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR) logger.println("Auth Failed");
+            else if (error == OTA_BEGIN_ERROR) logger.println("Begin Failed");
+            else if (error == OTA_CONNECT_ERROR) logger.println("Connect Failed");
+            else if (error == OTA_RECEIVE_ERROR) logger.println("Receive Failed");
+            else if (error == OTA_END_ERROR) logger.println("End Failed");
         });
         ArduinoOTA.begin();
-        Serial.println("OTA ready.");
+        logger.begin();
+        logger.println("OTA ready. Telnet logging on port " + String(TELNET_PORT));
     } else {
-        Serial.println();
-        Serial.println("WiFi failed — running without OTA. Game still works!");
+        logger.println();
+        logger.println("WiFi failed — running without OTA. Game still works!");
     }
 
     // Initialize buttons
@@ -240,7 +243,7 @@ void setup() {
     game.reset();
     printGameState();
 
-    Serial.println("Ready! Press buttons to score.");
+    logger.println("Ready! Press buttons to score.");
 }
 
 // =============================================================================
@@ -248,8 +251,9 @@ void setup() {
 // =============================================================================
 
 void loop() {
-    // Handle OTA updates (must be called frequently)
+    // Handle OTA updates and telnet connections
     ArduinoOTA.handle();
+    logger.handle();
 
     // Update button states
     btn1.update();
@@ -261,7 +265,7 @@ void loop() {
             bothHeldSince = millis();
         } else if (millis() - bothHeldSince >= LONG_PRESS_MS && !resetTriggered) {
             resetTriggered = true;
-            Serial.println(">>> GAME RESET <<<");
+            logger.println(">>> GAME RESET <<<");
             game.reset();
             display.clearAll();
             display.show();
