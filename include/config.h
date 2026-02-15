@@ -24,14 +24,14 @@
 #define TOTAL_LEDS          144       // 144 LEDs/m, 1m strip
 #define BRIGHTNESS          80        // 0-255, start conservative
 
-// How many LEDs per player side for scoring (21 points = 21 LEDs)
-#define SCORE_LEDS_PER_SIDE 21
+// How many LEDs per player side for scoring (21 points with gaps = 41 LEDs)
+#define SCORE_LEDS_PER_SIDE 41
 
 // LED layout: Player 1 LEDs are at the LEFT edge, Player 2 at the RIGHT edge.
 // Score LEDs grow INWARD from each edge toward center.
 //
-// [P1 score: 0..20] [--- gap/unused ---] [P2 score: 87..67]
-//  ^ LED 0 is P1's first point         ^ LED 87 is P2's first point
+// [P1 score: 0..40] [serve:41] [gap:42..101] [serve:102] [P2 score: 103..143]
+//  ^ Every other LED lit (0,2,4..40)        ^ P2 mirrored (143,141,139..103)
 //
 // P1 lights up LEDs 0,1,2... as they score
 // P2 lights up LEDs (TOTAL_LEDS-1), (TOTAL_LEDS-2)... as they score

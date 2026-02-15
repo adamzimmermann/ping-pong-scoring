@@ -46,14 +46,14 @@ public:
             leds[TOTAL_LEDS - 1 - i] = BG_COLOR;
         }
 
-        // Player 1 score (left side, growing right from edge)
-        for (int i = 0; i < game.score[0] && i < SCORE_LEDS_PER_SIDE; i++) {
-            leds[i] = colorForPoint(i + 1);
+        // Player 1 score (left side, growing right from edge, every other LED)
+        for (int i = 0; i < game.score[0] && i * 2 < SCORE_LEDS_PER_SIDE; i++) {
+            leds[i * 2] = colorForPoint(i + 1);
         }
 
-        // Player 2 score (right side, growing left from edge)
-        for (int i = 0; i < game.score[1] && i < SCORE_LEDS_PER_SIDE; i++) {
-            leds[TOTAL_LEDS - 1 - i] = colorForPoint(i + 1);
+        // Player 2 score (right side, growing left from edge, every other LED)
+        for (int i = 0; i < game.score[1] && i * 2 < SCORE_LEDS_PER_SIDE; i++) {
+            leds[TOTAL_LEDS - 1 - (i * 2)] = colorForPoint(i + 1);
         }
 
         // Deuce advantage: show a single advantage LED on the leading player's gap side
@@ -149,8 +149,8 @@ public:
         // Flash the winner's score brighter
         int8_t w = game.winner();
         if (w >= 0 && (frame / 5) % 2 == 0) {
-            for (int i = 0; i < game.score[w] && i < SCORE_LEDS_PER_SIDE; i++) {
-                int idx = (w == 0) ? i : (TOTAL_LEDS - 1 - i);
+            for (int i = 0; i < game.score[w] && i * 2 < SCORE_LEDS_PER_SIDE; i++) {
+                int idx = (w == 0) ? (i * 2) : (TOTAL_LEDS - 1 - (i * 2));
                 leds[idx] = VICTORY_FLASH_COLOR;
             }
         }

@@ -157,9 +157,9 @@ void handleGameOver() {
         unsigned long elapsed = millis() - game.animStartTime;
         if (elapsed > 3000) {  // Wait at least 3 seconds before allowing reset
             logger.println(">>> NEW GAME <<<");
-            uint8_t lastFirstServer = game.firstServer;
+            int8_t loser = 1 - game.winner();  // Loser serves first next game
             game.reset();
-            game.firstServer = 1 - lastFirstServer;  // Alternate first serve
+            game.firstServer = loser;
             game.servingPlayer = game.firstServer;
             display.clearAll();
             display.show();
