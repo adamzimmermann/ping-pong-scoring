@@ -10,8 +10,8 @@
 // Check your specific board's pinout documentation.
 
 #define LED_DATA_PIN        3     // LED2 output on QuinLED Dig-Uno (GPIO3)
-#define BUTTON_PLAYER1_PIN  22    // Player 1 (left side) button
-#define BUTTON_PLAYER2_PIN  21    // Player 2 (right side) button
+#define BUTTON_PLAYER1_PIN  15    // Player 1 (left side) button — Q1 on QuinLED Dig-Uno v3
+#define BUTTON_PLAYER2_PIN  12    // Player 2 (right side) button — Q2 on QuinLED Dig-Uno v3
 
 // =============================================================================
 // LED STRIP CONFIGURATION
