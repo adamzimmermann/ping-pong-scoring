@@ -4,35 +4,34 @@ ESP32-based scoring display for a ping pong table using a WS2815 LED strip.
 
 ## Hardware
 
-- **Board**: QuinLED ESP32-WROOM-32E
+- **Board**: QuinLED-Dig-Uno v3.5 (pre-assembled) with ESP32-WROOM-32E
 - **LEDs**: WS2815 (12V) addressable strip, 144 LEDs/m
 - **Buttons**: 2x momentary push buttons (normally open)
 - **Power**: 12V power supply (sized for your LED count)
 
 ## Wiring
 
-### LED Strip
-| Strip Wire | Connect To |
-|-----------|------------|
-| Data (green) | GPIO 16 (or your QuinLED's LED data pin) |
-| +12V (red) | 12V power supply + |
-| GND (white) | Power supply GND + ESP32 GND |
-| Backup data | Leave unconnected or tie to data |
+### LED Strip (QuinLED-Dig-Uno 4-pin terminal block)
+| Strip Wire | Terminal | GPIO |
+|-----------|----------|------|
+| Data (green) | LED1 | 16 |
+| Backup data (blue) | LED2 | — |
+| +12V (red) | V+ | — |
+| GND (white) | GND | — |
 
-### Buttons (active LOW with internal pull-up)
-| Button | Connect To |
-|--------|------------|
-| Player 1 terminal A | GPIO 32 |
-| Player 1 terminal B | GND |
-| Player 2 terminal A | GPIO 33 |
-| Player 2 terminal B | GND |
+### Buttons (QuinLED-Dig-Uno Q pads, active LOW with internal pull-up)
+| Button | Pad | GPIO |
+|--------|-----|------|
+| Player 1 | Q1 | 15 |
+| Player 2 | Q2 | 12 |
 
-No external resistors needed — the code enables internal pull-ups.
+Wire each button between the Q pad and GND. No external resistors needed — the code enables internal pull-ups.
 
 ### Important Notes
 - **Common ground**: The ESP32 GND must be connected to the LED power supply GND.
-- **GPIO pins**: The default pins (16, 32, 33) should work on most QuinLED boards. Check your specific board's documentation — some GPIOs may be used for onboard features. Avoid GPIO 0, 2, 5, 12, 15 (boot-sensitive pins).
-- **Level shifting**: The QuinLED boards typically include level shifting on the LED data pin. If using a generic ESP32, you may need a level shifter (3.3V → 5V/12V logic).
+- **Level shifting**: The pre-assembled QuinLED-Dig-Uno includes level shifting on the LED1/LED2 outputs.
+- **FastLED driver**: Use RMT, not I2S (`-D FASTLED_RMT_MAX_CHANNELS=2`). The I2S driver causes incorrect LED behavior on this board.
+- **Serial disabled**: UART TX/RX pins (GPIO1/GPIO3) may conflict with LED outputs. Debug logging is available via telnet instead (see below).
 
 ## Setup
 
@@ -42,8 +41,10 @@ No external resistors needed — the code enables internal pull-ups.
    - Set `TOTAL_LEDS` to match your strip length
    - Verify GPIO pin assignments for your board
    - Adjust `BRIGHTNESS` as needed
-4. Build and upload: `pio run -t upload`
-5. Open serial monitor at 115200 baud for debug output
+4. Copy `include/secrets.h.example` to `include/secrets.h` and fill in your WiFi credentials
+5. First flash via USB: `pio run -e esp32-usb -t upload`
+6. Subsequent flashes via OTA: `pio run -e esp32-ota -t upload`
+7. Monitor logs via telnet: `nc pingpong-scorer.local 23`
 
 ## How It Works
 
@@ -98,9 +99,16 @@ Edit `POINTS_TO_WIN`, `SERVE_SWITCH_EVERY`, etc. in `config.h`.
 ### LED density
 If your strip has fewer LEDs, reduce `TOTAL_LEDS` and optionally `SCORE_LEDS_PER_SIDE` if you want fewer than 21 LEDs per player (in which case multiple points may share a single LED — you'd need to modify the display code).
 
+## OTA & Telnet Logging
+
+After the first USB flash, the board connects to WiFi and supports:
+- **OTA updates**: Flash wirelessly with `pio run -e esp32-ota -t upload`
+- **Telnet logging** (port 23): All debug output is mirrored over the network since Serial is disabled. Connect with `nc pingpong-scorer.local 23` to see live logs.
+
 ## Troubleshooting
 
 - **No LEDs light up**: Check data pin, power connections, and that GND is shared between ESP32 and LED power supply.
-- **Wrong colors / flickering**: Try changing `COLOR_ORDER` in config.h (GRB, RGB, BRG). WS2815 strips vary.
-- **Buttons not working**: Check wiring. Use serial monitor — it prints every button press and score change. Try swapping to different GPIO pins if a pin is reserved on your board.
+- **LEDs all white / wrong colors**: Make sure you are using the RMT driver, not I2S. Check `build_flags` in `platformio.ini` for `-D FASTLED_RMT_MAX_CHANNELS=2`. Also try changing `COLOR_ORDER` in config.h (GRB, RGB, BRG).
+- **Buttons not working**: Check wiring. Connect via telnet to see button press logs. On the QuinLED-Dig-Uno, use the Q1-Q4 pads for button inputs (not the MOSFET-driven LED/Q outputs on the terminal blocks).
 - **LEDs too bright/dim**: Adjust `BRIGHTNESS` in config.h (0-255).
+- **OTA flash fails**: Make sure the board is powered on and connected to WiFi. If it crashed, power cycle it first.
