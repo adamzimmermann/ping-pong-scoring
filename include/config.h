@@ -63,7 +63,7 @@ const CRGB SCORE_COLORS[] = {
     CRGB::Blue,            // Points  1-5
     CRGB::Green,           // Points  6-10
     CRGB::Yellow,          // Points 11-15
-    CRGB::Orange,          // Points 16-20
+    CRGB::OrangeRed,       // Points 16-20
     CRGB::Red              // Point  21 (game point!)
 };
 #define NUM_SCORE_COLORS (sizeof(SCORE_COLORS) / sizeof(SCORE_COLORS[0]))
