@@ -45,20 +45,34 @@ struct PingPongGame {
         return isDeuce() ? DEUCE_SERVE_SWITCH : SERVE_SWITCH_EVERY;
     }
 
+    // Is one player at game point (match point) without deuce?
+    bool isGamePoint() const {
+        return !isDeuce() &&
+               (score[0] >= POINTS_TO_WIN - 1 || score[1] >= POINTS_TO_WIN - 1);
+    }
+
     // Calculate who should be serving based on total points
     uint8_t calculateServingPlayer() const {
         uint16_t total = totalPoints();
 
         if (!isDeuce()) {
+            // Game point: trailing player serves until they tie or lose
+            if (isGamePoint()) {
+                return (score[0] >= POINTS_TO_WIN - 1) ? 1 : 0;
+            }
+
             // Normal play: switch every SERVE_SWITCH_EVERY points
             uint8_t serveBlock = total / SERVE_SWITCH_EVERY;
             return (firstServer + serveBlock) % 2;
         } else {
-            // Deuce: first figure out how many points were played before deuce
+            // Deuce: player without advantage serves
+            // When tied, use alternating every DEUCE_SERVE_SWITCH points
+            if (score[0] > score[1]) return 1;  // P2 serves (P1 has advantage)
+            if (score[1] > score[0]) return 0;  // P1 serves (P2 has advantage)
+
+            // Tied in deuce: alternate every DEUCE_SERVE_SWITCH points
             uint16_t pointsBeforeDeuce = DEUCE_THRESHOLD * 2;
             uint16_t blocksBeforeDeuce = pointsBeforeDeuce / SERVE_SWITCH_EVERY;
-
-            // Points played during deuce
             uint16_t deucePoints = total - pointsBeforeDeuce;
             uint16_t deuceBlocks = deucePoints / DEUCE_SERVE_SWITCH;
 
