@@ -40,7 +40,7 @@ public:
     }
 
     size_t write(uint8_t b) override {
-        Serial.write(b);
+        if (_serialEnabled) Serial.write(b);
         if (_client && _client.connected()) {
             _client.write(b);
         }
@@ -48,14 +48,17 @@ public:
     }
 
     size_t write(const uint8_t *buf, size_t size) override {
-        Serial.write(buf, size);
+        if (_serialEnabled) Serial.write(buf, size);
         if (_client && _client.connected()) {
             _client.write(buf, size);
         }
         return size;
     }
 
+    void enableSerial(bool enabled) { _serialEnabled = enabled; }
+
 private:
     WiFiServer *_server = nullptr;
     WiFiClient _client;
+    bool _serialEnabled = false;
 };

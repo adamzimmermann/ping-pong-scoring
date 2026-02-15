@@ -174,7 +174,8 @@ void handleGameOver() {
 // =============================================================================
 
 void setup() {
-    Serial.begin(115200);
+    // Serial disabled — UART TX/RX pins may conflict with LED outputs
+    // Use telnet (nc pingpong-scorer.local 23) for logging instead
     logger.println();
     logger.println("=== Ping Pong Scorer ===");
     logger.println("Initializing...");
