@@ -74,8 +74,8 @@ const CRGB SCORE_COLORS[] = {
 // Serve change animation color
 #define SERVE_ANIM_COLOR    CRGB::White
 
-// Deuce: trailing player's LEDs are dimmed to this level (0-255)
-#define DEUCE_TRAILING_DIM  100
+// Deuce: advantage indicator LED color
+#define DEUCE_ADV_COLOR     CRGB::Red
 
 // Game over: losing player's LEDs are dimmed to this level (0-255)
 #define LOSER_DIM           20

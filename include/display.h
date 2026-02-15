@@ -56,16 +56,12 @@ public:
             leds[TOTAL_LEDS - 1 - i] = colorForPoint(i + 1);
         }
 
-        // Deuce advantage: dim the trailing player's LEDs
+        // Deuce advantage: show a single advantage LED on the leading player's gap side
         if (game.isDeuce()) {
-            for (int p = 0; p < 2; p++) {
-                if (game.score[p] < game.score[1 - p]) {
-                    // This player is trailing — dim their LEDs
-                    for (int i = 0; i < SCORE_LEDS_PER_SIDE; i++) {
-                        int idx = (p == 0) ? i : (TOTAL_LEDS - 1 - i);
-                        leds[idx].nscale8(DEUCE_TRAILING_DIM);
-                    }
-                }
+            if (game.score[0] > game.score[1]) {
+                leds[SCORE_LEDS_PER_SIDE + 1] = DEUCE_ADV_COLOR;  // LED 22, gap side of P1 serve
+            } else if (game.score[1] > game.score[0]) {
+                leds[TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 2] = DEUCE_ADV_COLOR;  // LED 121, gap side of P2 serve
             }
         }
     }
@@ -100,7 +96,7 @@ public:
     // ANIMATIONS
     // =========================================================================
 
-    // Serve change animation: chase pattern across the center gap
+    // Serve change animation: single dot with trail sweeps across full strip
     // Returns true when animation is complete
     bool animateServeChange(const PingPongGame& game) {
         unsigned long elapsed = millis() - game.animStartTime;
@@ -109,40 +105,27 @@ public:
 
         if (frame >= totalFrames) return true;  // Animation done
 
-        // Render the current score as base
+        clearAll();
         renderScore(game);
 
-        // Chase animation: light up center gap LEDs in a sweep
-        int gapStart = SCORE_LEDS_PER_SIDE;
-        int gapEnd = TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 1;
-        int gapSize = gapEnd - gapStart + 1;
+        // Serve indicator positions
+        int p1ServeIdx = SCORE_LEDS_PER_SIDE;                  // LED 21
+        int p2ServeIdx = TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 1; // LED 122
 
-        if (gapSize > 0) {
-            // Sweep toward the new server's indicator LED
-            int sweepPos;
-            if (game.servingPlayer == 1) {
-                // New server is P2 (right): sweep left-to-right
-                sweepPos = map(frame, 0, totalFrames, 0, gapSize - 1);
-            } else {
-                // New server is P1 (left): sweep right-to-left
-                sweepPos = map(frame, 0, totalFrames, gapSize - 1, 0);
+        // Sweep from old server's serve LED to new server's serve LED
+        int startIdx = (game.servingPlayer == 1) ? p1ServeIdx : p2ServeIdx;
+        int endIdx   = (game.servingPlayer == 1) ? p2ServeIdx : p1ServeIdx;
+        int sweepPos = map(frame, 0, totalFrames - 1, startIdx, endIdx);
+
+        // 10-LED chase trail behind the sweep direction
+        int trailDir = (startIdx < endIdx) ? -1 : 1;
+        for (int t = 0; t < 10; t++) {
+            int idx = sweepPos + (t * trailDir);
+            if (idx >= 0 && idx < TOTAL_LEDS) {
+                uint8_t brightness = 255 - (t * 25);
+                leds[idx] = SERVE_ANIM_COLOR;
+                leds[idx].nscale8(brightness);
             }
-
-            // Trail of 3 LEDs (trail behind the sweep direction)
-            int trailDir = (game.servingPlayer == 1) ? -1 : 1;
-            for (int t = 0; t < 3; t++) {
-                int idx = gapStart + sweepPos + (t * trailDir);
-                if (idx >= gapStart && idx <= gapEnd) {
-                    uint8_t brightness = 255 - (t * 80);
-                    leds[idx] = SERVE_ANIM_COLOR;
-                    leds[idx].nscale8(brightness);
-                }
-            }
-        }
-
-        // Also flash the new serve indicator
-        if ((frame / 3) % 2 == 0) {
-            renderServeIndicator(game);
         }
 
         FastLED.show();
