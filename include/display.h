@@ -47,8 +47,8 @@ public:
         }
 
         // Player 1 score (left side, growing right from edge, every other LED)
-        for (int i = 0; i < game.score[0] && i * 2 < SCORE_LEDS_PER_SIDE; i++) {
-            leds[i * 2] = colorForPoint(i + 1);
+        for (int i = 0; i < game.score[0] && P1_LED_OFFSET + i * 2 < SCORE_LEDS_PER_SIDE; i++) {
+            leds[P1_LED_OFFSET + i * 2] = colorForPoint(i + 1);
         }
 
         // Player 2 score (right side, growing left from edge, every other LED)
@@ -59,7 +59,7 @@ public:
         // Deuce advantage: show a single advantage LED on the leading player's gap side
         if (game.isDeuce()) {
             if (game.score[0] > game.score[1]) {
-                leds[SCORE_LEDS_PER_SIDE + 2] = DEUCE_ADV_COLOR;  // LED 43, spaced past P1 serve
+                leds[P1_LED_OFFSET + SCORE_LEDS_PER_SIDE + 2] = DEUCE_ADV_COLOR;  // Spaced past P1 serve
             } else if (game.score[1] > game.score[0]) {
                 leds[TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 3] = DEUCE_ADV_COLOR;  // LED 100, spaced past P2 serve
             }
@@ -73,7 +73,7 @@ public:
     // Pulse a serve indicator LED just outside the score area
     void renderServeIndicator(const PingPongGame& game) {
         // Serve indicator positions: just past the score area on each side
-        int p1ServeIdx = SCORE_LEDS_PER_SIDE;                  // First LED past P1's score
+        int p1ServeIdx = P1_LED_OFFSET + SCORE_LEDS_PER_SIDE;   // First LED past P1's score
         int p2ServeIdx = TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 1; // First LED past P2's score
 
         // Clear both serve indicators
@@ -109,7 +109,7 @@ public:
         renderScore(game);
 
         // Serve indicator positions
-        int p1ServeIdx = SCORE_LEDS_PER_SIDE;                  // LED 21
+        int p1ServeIdx = P1_LED_OFFSET + SCORE_LEDS_PER_SIDE;  // LED past P1's score
         int p2ServeIdx = TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 1; // LED 122
 
         // Sweep from old server's serve LED to new server's serve LED
@@ -150,7 +150,7 @@ public:
         int8_t w = game.winner();
         if (w >= 0 && (frame / 5) % 2 == 0) {
             for (int i = 0; i < game.score[w] && i * 2 < SCORE_LEDS_PER_SIDE; i++) {
-                int idx = (w == 0) ? (i * 2) : (TOTAL_LEDS - 1 - (i * 2));
+                int idx = (w == 0) ? (P1_LED_OFFSET + i * 2) : (TOTAL_LEDS - 1 - (i * 2));
                 leds[idx] = VICTORY_FLASH_COLOR;
             }
         }
@@ -196,7 +196,7 @@ public:
         if (w >= 0) {
             int loser = 1 - w;
             for (int i = 0; i < SCORE_LEDS_PER_SIDE; i++) {
-                int idx = (loser == 0) ? i : (TOTAL_LEDS - 1 - i);
+                int idx = (loser == 0) ? (P1_LED_OFFSET + i) : (TOTAL_LEDS - 1 - i);
                 leds[idx].nscale8(LOSER_DIM);
             }
         }

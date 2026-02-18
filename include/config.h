@@ -27,17 +27,22 @@
 // How many LEDs per player side for scoring (21 points with gaps = 41 LEDs)
 #define SCORE_LEDS_PER_SIDE 41
 
+// Offset for the first LED on the data-in end of the strip (Player 1's side).
+// Set to 1 if the first physical LED (index 0) is unusable or missing.
+#define P1_LED_OFFSET       1
+
 // LED layout: Player 1 LEDs are at the LEFT edge, Player 2 at the RIGHT edge.
 // Score LEDs grow INWARD from each edge toward center.
+// P1_LED_OFFSET skips unusable LED(s) at the data-in end of the strip.
 //
-// [P1 score: 0..40] [serve:41] [gap:42..101] [serve:102] [P2 score: 103..143]
-//  ^ Every other LED lit (0,2,4..40)        ^ P2 mirrored (143,141,139..103)
+// [skip:0] [P1 score: 1..41] [serve:42] [gap:43..101] [serve:102] [P2 score: 103..143]
+//           ^ Every other LED lit (1,3,5..41)           ^ P2 mirrored (143,141,139..103)
 //
-// P1 lights up LEDs 0,2,4... as they score (every other LED)
+// P1 lights up LEDs 1,3,5... as they score (every other LED)
 // P2 lights up LEDs 143,141,139... as they score (every other LED)
 
 // Serve indicator LED: the outermost LED on the serving player's side pulses
-// P1 serve indicator = LED index (SCORE_LEDS_PER_SIDE) (just past score area)
+// P1 serve indicator = LED index (P1_LED_OFFSET + SCORE_LEDS_PER_SIDE)
 // P2 serve indicator = LED index (TOTAL_LEDS - SCORE_LEDS_PER_SIDE - 1)
 
 // =============================================================================
