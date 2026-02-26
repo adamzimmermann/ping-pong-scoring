@@ -143,8 +143,15 @@ void printGameState() {
 void handlePlaying() {
     // Process button presses (only when not doing reset)
     if (!resetTriggered) {
+        // Double-tap at 0-0: swap first server
+        if (game.totalPoints() == 0 && (btn1.doubleTapped || btn2.doubleTapped)) {
+            game.firstServer = 1 - game.firstServer;
+            game.servingPlayer = game.firstServer;
+            logger.print("Swapped first server to P");
+            logger.println(game.firstServer + 1);
+        }
         // Double-tap: undo last point for that player
-        if (btn1.doubleTapped) {
+        else if (btn1.doubleTapped) {
             logger.print("Undo P1 point! ");
             game.removePoint(0);
             printGameState();
