@@ -47,7 +47,7 @@ public:
         }
 
         // Player 1 score (left side, growing right from edge, every other LED)
-        for (int i = 0; i < game.score[0] && P1_LED_OFFSET + i * 2 < SCORE_LEDS_PER_SIDE; i++) {
+        for (int i = 0; i < game.score[0] && P1_LED_OFFSET + i * 2 <= SCORE_LEDS_PER_SIDE; i++) {
             leds[P1_LED_OFFSET + i * 2] = colorForPoint(i + 1);
         }
 
