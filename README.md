@@ -76,7 +76,8 @@ Strip across center of table:
 |--------|-------|
 | Player 1 scores | Press P1 button |
 | Player 2 scores | Press P2 button |
-| Undo last point | Double-tap the player's button |
+| Undo last point | Double-tap either button |
+| Change initial serve | Double-tap either button (only works at 0-0) |
 | Reset game | Hold either button for 3 seconds |
 | New game after win | Press any button (after victory animation) |
 
